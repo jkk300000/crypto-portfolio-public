@@ -55,7 +55,7 @@ flowchart TB
 
 - `.env` 및 API 키, 웹훅, 카카오 토큰
 - `config.py` (튜닝값, 서브계정 UID, 원금) — gitignore. 공개 템플릿은 `config.example.py`
-- `indicators.py` (Pine 정합 계산) — gitignore. 공개 템플릿은 `indicators.example.py` (함수 시그니처만)
+- `indicators.py` (지표 계산) — gitignore. 공개 템플릿은 `indicators.example.py` (함수 시그니처만)
 - TradingView `.pine` 원본
 - 백테스트/실거래 CSV, `allocation.json` 실데이터, 런타임 state
 
@@ -92,4 +92,4 @@ python main.py
 - 전략 봇은 자기 선물 잔고가 아니라 `allocation.json`의 `allocated[sleeve]`로 사이징한다.
 - 컨트롤러는 1분 폴링으로 마크(선물 + 스팟)를 모으고, 이체는 플랫일 때만 실행해 포지션 위에 자본이 빠지지 않게 한다.
 - TP/SL은 시장가 폴링이 아니라 Gate 가격 트리거 주문으로 등록한다.
--
+

@@ -1,10 +1,10 @@
 {
   "ts": "1970-01-01T00:00:00Z",
   "names": {
-    "eth": "ETH SuperTrend+BB",
-    "ema": "BTC EMA+RSI Trail",
-    "sr": "BTC SR+IBS+ST",
-    "dc": "BTC Donchian"
+    "eth": "ETH",
+    "ema": "BTC1",
+    "sr": "BTC2",
+    "dc": "BTC3"
   },
   "total": 0.0,
   "weights": {
