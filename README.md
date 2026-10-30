@@ -1,4 +1,4 @@
-# Gate.io Multi-Strategy Crypto Book
+# Gate.io 무기한선물 포트폴리오 거래 봇
 
 Gate.io USDT 무기한 선물 위에서 **여러 전략을 서브계정으로 분리**하고, 일정 주기로 자본을 배분·이전하는 실거래 시스템입니다.
 
