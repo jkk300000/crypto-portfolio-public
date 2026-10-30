@@ -1,0 +1,19 @@
+[Unit]
+Description=Gate.io SR + IBS + SuperTrend BTC_USDT 1h Trading Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=%h/gateio_btc_sr_ibs_supertrend
+EnvironmentFile=%h/gateio_btc_sr_ibs_supertrend/.env
+ExecStart=%h/gateio_btc_sr_ibs_supertrend/.venv/bin/python %h/gateio_btc_sr_ibs_supertrend/main.py
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=btc-sr-ibs-supertrend
+
+[Install]
+WantedBy=multi-user.target

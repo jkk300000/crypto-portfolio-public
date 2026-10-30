@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Virtualenv
+.venv/
+venv/
+
+# Secrets and local env
+.env
+.env.*
+!.env.example
+kakao_token.json
+
+# Live copies — public templates are *.example.py
+config.py
+indicators.py
+
+# Runtime / local state
+*.log
+events.jsonl
+events.cursor
+transfer_state.json
+runtime_state.json
+trade_state.json
+mdd_state.json
+mdd_state.lock
+sr_state.json
+*_state.json
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

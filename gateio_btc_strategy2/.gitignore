@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Secrets / runtime
+.env
+.env.*
+!.env.example
+config.py
+indicators.py
+*.log
+runtime_state.json
+trade_state.json
+sr_state.json
+*_state.json
+.idea/
+.vscode/

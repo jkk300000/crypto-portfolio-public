@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>포트폴리오 포지션</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #151b2e;
+      --line: #243049;
+      --text: #e8eefc;
+      --muted: #8b97b3;
+      --long: #3dd68c;
+      --short: #ff6b7a;
+      --flat: #6d7a96;
+      --warn: #f5c16c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      padding: 20px 24px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    h1 { margin: 0; font-size: 20px; font-weight: 650; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .book {
+      margin: 12px 24px 0;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .book .k { color: var(--muted); font-size: 12px; }
+    .book .v { font-size: 18px; font-weight: 700; margin-top: 4px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      padding: 16px 24px 32px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 16px 12px;
+    }
+    .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .name { font-weight: 650; }
+    .badge {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 999px;
+      letter-spacing: .02em;
+    }
+    .badge.long { background: #163528; color: var(--long); }
+    .badge.short { background: #3a1820; color: var(--short); }
+    .badge.flat { background: #222838; color: var(--flat); }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-top: 1px solid #1d2538;
+      font-size: 13px;
+    }
+    .row span:first-child { color: var(--muted); }
+    .row b.long { color: var(--long); }
+    .row b.short { color: var(--short); }
+    .row .note { color: var(--muted); font-weight: 500; font-size: 11px; margin-left: 6px; }
+    .pnl.pos { color: var(--long); font-weight: 700; }
+    .pnl.neg { color: var(--short); font-weight: 700; }
+    .err { color: var(--warn); font-size: 12px; margin-top: 8px; }
+    .token-box {
+      max-width: 420px;
+      margin: 40px auto;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #0f1526;
+      color: var(--text);
+      font-size: 14px;
+    }
+    button { margin-top: 10px; cursor: pointer; background: #2b5cff; border: 0; font-weight: 650; }
+  </style>
+</head>
+<body>
+  <div id="gate" class="token-box" hidden>
+    <h1>대시보드 토큰</h1>
+    <p class="meta">서버 .env 의 DASHBOARD_TOKEN 을 입력하세요.</p>
+    <input id="token" type="password" placeholder="DASHBOARD_TOKEN" />
+    <button id="save">열기</button>
+  </div>
+  <div id="app">
+    <header>
+      <h1>4전략 포지션</h1>
+      <div class="meta" id="summary">불러오는 중</div>
+    </header>
+    <section class="book" id="book"></section>
+    <div class="grid" id="grid"></div>
+  </div>
+  <script>
+    const fmt = (v, d=2) => v == null || Number.isNaN(Number(v)) ? "-" : Number(v).toLocaleString("en-US", {minimumFractionDigits:d, maximumFractionDigits:d});
+    const won = (v) => v == null ? "-" : ((v>=0?"+":"") + fmt(v, 2) + " USDT");
+    const TAB_TITLE = "포트폴리오 포지션";
+
+    function setTabTitle(data) {
+      const pnl = data && data.book_pnl;
+      if (pnl == null || Number.isNaN(Number(pnl))) {
+        document.title = TAB_TITLE;
+        return;
+      }
+      const amt = (Number(pnl) >= 0 ? "+" : "") + fmt(pnl, 2);
+      const pct = data.book_pnl_pct;
+      const pctTxt = pct == null || Number.isNaN(Number(pct))
+        ? ""
+        : " (" + (Number(pct) >= 0 ? "+" : "") + fmt(pct, 2) + "%)";
+      document.title = "원금 대비 " + amt + pctTxt;
+    }
+    const tokenKey = "dashboard_token";
+    let token = localStorage.getItem(tokenKey) || new URLSearchParams(location.search).get("token") || "";
+    let busy = false;
+
+    function headers() {
+      return token ? { "Authorization": "Bearer " + token } : {};
+    }
+
+    function badge(s) {
+      if (!s.has_position) return '<span class="badge flat">FLAT</span>';
+      return s.side === "short" ? '<span class="badge short">SHORT</span>' : '<span class="badge long">LONG</span>';
+    }
+
+    function partials(s) {
+      if (!s.partials || !s.partials.length) return "없음";
+      return s.partials.map(p => {
+        const lab = p.label || "부분익절";
+        const st = p.status === "done" ? "체결" : "대기";
+        return lab + " " + fmt(p.price, 2) + " (" + st + ")";
+      }).join(" · ");
+    }
+
+    function guideRows(s) {
+      const g = s.guide || {};
+      if (g.kind === "donchian") {
+        const rows = g.rows && g.rows.length ? g.rows : [
+          {label: "돈치안20 상단"}, {label: "돈치안20 하단"},
+          {label: "돈치안10 상단"}, {label: "돈치안10 하단"}
+        ];
+        return rows.map(r => {
+          const cls = r.emphasis ? (s.side === "short" ? "short" : "long") : "";
+          const note = r.note ? `<span class="note">${r.note}</span>` : "";
+          return `<div class="row"><span>${r.label}${note}</span><b class="${cls}">${fmt(r.value, 2)}</b></div>`;
+        }).join("");
+      }
+      if (g.kind === "ema") {
+        const trail = s.has_position ? `<span class="note">트레일</span>` : "";
+        return `<div class="row"><span>${g.label || "EMA 8h"}${trail}</span><b>${fmt(g.value, 2)}</b></div>`;
+      }
+      const side = g.side || s.supertrend_side;
+      const value = g.value != null ? g.value : s.supertrend;
+      const txt = s.has_position && value != null
+        ? fmt(value, 2) + (side ? " (" + (side === "long" ? "상승" : "하락") + ")" : "")
+        : "-";
+      return `<div class="row"><span>${g.label || "슈퍼트렌드"}</span><b>${txt}</b></div>`;
+    }
+
+    function card(s) {
+      const pnlClass = (s.pnl || 0) > 0 ? "pos" : (s.pnl || 0) < 0 ? "neg" : "";
+      const showPartials = s.id !== "ema";
+      return `<article class="card">
+        <div class="top"><div class="name">${s.name}</div>${badge(s)}</div>
+        <div class="row"><span>비중</span><b>${(s.weight*100).toFixed(1)}%</b></div>
+        <div class="row"><span>원금</span><b>${fmt(s.principal, 2)}</b></div>
+        <div class="row"><span>현재 잔고</span><b>${fmt(s.equity, 2)}</b></div>
+        <div class="row"><span>원금 대비</span><b class="pnl ${ (s.book_pnl||0)>0 ? "pos" : (s.book_pnl||0)<0 ? "neg" : "" }">${s.book_pnl==null ? "-" : won(s.book_pnl) + (s.book_pnl_pct!=null ? " (" + (s.book_pnl_pct>=0?"+":"") + fmt(s.book_pnl_pct,2) + "%)" : "")}</b></div>
+        <div class="row"><span>수량</span><b>${s.has_position ? fmt(s.size, 0) : "-"}</b></div>
+        <div class="row"><span>진입가</span><b>${s.has_position ? fmt(s.entry, 2) : "-"}</b></div>
+        <div class="row"><span>현재가</span><b>${s.has_position ? fmt(s.mark, 2) : "-"}</b></div>
+        <div class="row"><span>손절 SL</span><b>${s.has_position ? fmt(s.sl, 2) : "-"}</b></div>
+        <div class="row"><span>익절 TP</span><b>${s.has_position ? fmt(s.tp, 2) : "-"}</b></div>
+        ${guideRows(s)}
+        ${showPartials ? `<div class="row"><span>부분 익절</span><b>${s.has_position ? partials(s) : "-"}</b></div>` : ""}
+        <div class="row"><span>현재 PnL</span><b class="pnl ${pnlClass}">${s.has_position ? won(s.pnl) + (s.pnl_pct!=null ? " (" + (s.pnl_pct>=0?"+":"") + fmt(s.pnl_pct,2) + "%)" : "") : "-"}</b></div>
+        ${s.error ? `<div class="err">${s.error}</div>` : ""}
+      </article>`;
+    }
+
+    async function refresh() {
+      if (busy) return;
+      busy = true;
+      try {
+      const res = await fetch("/api/positions", { headers: headers() });
+      if (res.status === 401) {
+        setTabTitle(null);
+        document.getElementById("app").hidden = true;
+        document.getElementById("gate").hidden = false;
+        return;
+      }
+      document.getElementById("gate").hidden = true;
+      document.getElementById("app").hidden = false;
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        document.getElementById("summary").textContent = "조회 실패 · " + (data.error || ("HTTP " + res.status));
+        return;
+      }
+      if (!data.sleeves) {
+        document.getElementById("summary").textContent = "조회 실패 · 응답에 포지션이 없습니다";
+        return;
+      }
+      document.getElementById("grid").innerHTML = data.sleeves.map(card).join("");
+      const bookClass = (data.book_pnl||0) > 0 ? "pos" : (data.book_pnl||0) < 0 ? "neg" : "";
+      const mdd = data.mdd || {};
+      const usd = (x) => x == null ? "-" : fmt(x, 2) + " USDT";
+      const ddTxt = (x) => {
+        if (x == null || Number.isNaN(Number(x))) return "-";
+        const pct = Number(x) * 100;
+        if (Math.abs(pct) < 0.005) return "0.00%";
+        return (pct > 0 ? "+" : "") + fmt(pct, 2) + "%";
+      };
+      const ddClass = (x) => (x||0) < -0.0001 ? "neg" : (x||0) > 0.0001 ? "pos" : "";
+      const livePeak = Number(mdd.peak);
+      const liveEq = Number(data.equity_total);
+      const curDd = (livePeak > 0 && liveEq > 0) ? (liveEq / livePeak - 1) : mdd.current_dd;
+      const epPeak = Number(mdd.mdd_peak);
+      const epTrough = Number(mdd.mdd_trough);
+      const recMdd = (epPeak > 0 && epTrough > 0) ? (epTrough / epPeak - 1) : mdd.mdd;
+      const recNote = (epPeak > 0 && epTrough > 0 && recMdd < -0.00005)
+        ? `<div style="font-size:11px;font-weight:500;color:var(--muted);margin-top:2px">${fmt(epPeak,2)} → ${fmt(epTrough,2)}</div>`
+        : "";
+      const incomplete = data.mdd_complete === false
+        ? `<div style="font-size:11px;font-weight:500;color:var(--warn);margin-top:2px">일부 조회 실패 · 직전 완전 평가</div>`
+        : "";
+      document.getElementById("book").innerHTML =
+        `<div><div class="k">원금</div><div class="v">${fmt(data.principal_total, 2)} USDT</div></div>` +
+        `<div><div class="k">현재 자산</div><div class="v">${usd(data.equity_total)}${incomplete}</div></div>` +
+        `<div><div class="k">메인 현물 USDT</div><div class="v">${data.main_spot_usdt==null ? "-" : fmt(data.main_spot_usdt, 2) + " USDT"}</div></div>` +
+        `<div><div class="k">서브 현물 USDT</div><div class="v">${data.sub_spot_usdt==null ? "-" : fmt(data.sub_spot_usdt, 2) + " USDT"}</div></div>` +
+        `<div><div class="k">원금 대비 PnL</div><div class="v pnl ${bookClass}">${won(data.book_pnl)}${data.book_pnl_pct==null?"":" (" + (data.book_pnl_pct>=0?"+":"") + fmt(data.book_pnl_pct,2) + "%)"}</div></div>` +
+        `<div><div class="k">미실현(열린 포지션)</div><div class="v pnl ${(data.pnl_total||0)>0?"pos":(data.pnl_total||0)<0?"neg":""}">${won(data.pnl_total)}</div></div>` +
+        `<div><div class="k">관측 고점</div><div class="v">${usd(mdd.peak)}</div></div>` +
+        `<div><div class="k">현재 고점대비</div><div class="v pnl ${ddClass(curDd)}">${ddTxt(curDd)}</div></div>` +
+        `<div><div class="k">기록 MDD</div><div class="v pnl ${ddClass(recMdd)}">${ddTxt(recMdd)}${recNote}</div></div>`;
+      const since = mdd.since ? "관측 " + mdd.since : "관측 대기";
+      document.getElementById("summary").textContent =
+        "열림 " + data.open_count + " / 4   ·   " + data.ts + "   ·   " + since;
+      setTabTitle(data);
+      } catch (err) {
+        document.getElementById("app").hidden = false;
+        document.getElementById("summary").textContent = "조회 실패 · " + (err && err.message ? err.message : err);
+      } finally {
+        busy = false;
+      }
+    }
+
+    document.getElementById("save").onclick = () => {
+      token = document.getElementById("token").value.trim();
+      localStorage.setItem(tokenKey, token);
+      refresh();
+    };
+    if (token) localStorage.setItem(tokenKey, token);
+    refresh();
+    setInterval(refresh, 2000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+[Unit]
+Description=Gate.io EMA200 + RSI Trail BTC Trading Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=%h/gateio_btc_ema_rsi_trail
+EnvironmentFile=%h/gateio_btc_ema_rsi_trail/.env
+ExecStart=%h/gateio_btc_ema_rsi_trail/.venv/bin/python %h/gateio_btc_ema_rsi_trail/main.py
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gateio-btc-ema-rsi-trail
+
+[Install]
+WantedBy=multi-user.target

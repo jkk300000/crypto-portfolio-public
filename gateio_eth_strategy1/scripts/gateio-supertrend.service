@@ -1,0 +1,19 @@
+[Unit]
+Description=Gate.io SuperTrend ETH 30m Trading Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=%h/gateio_supertrend_eth
+EnvironmentFile=%h/gateio_supertrend_eth/.env
+ExecStart=%h/gateio_supertrend_eth/.venv/bin/python %h/gateio_supertrend_eth/main.py
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gateio-supertrend
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,46 @@
+{
+  "ts": "1970-01-01T00:00:00Z",
+  "names": {
+    "eth": "ETH SuperTrend+BB",
+    "ema": "BTC EMA+RSI Trail",
+    "sr": "BTC SR+IBS+ST",
+    "dc": "BTC Donchian"
+  },
+  "total": 0.0,
+  "weights": {
+    "eth": 0.25,
+    "ema": 0.25,
+    "sr": 0.25,
+    "dc": 0.25
+  },
+  "cash": {
+    "eth": 0.0,
+    "ema": 0.0,
+    "sr": 0.0,
+    "dc": 0.0
+  },
+  "allocated": {
+    "eth": 0.0,
+    "ema": 0.0,
+    "sr": 0.0,
+    "dc": 0.0
+  },
+  "actual_weight": {
+    "eth": 0.0,
+    "ema": 0.0,
+    "sr": 0.0,
+    "dc": 0.0
+  },
+  "deficit": {
+    "eth": 0.0,
+    "ema": 0.0,
+    "sr": 0.0,
+    "dc": 0.0
+  },
+  "surplus": {
+    "eth": 0.0,
+    "ema": 0.0,
+    "sr": 0.0,
+    "dc": 0.0
+  }
+}
