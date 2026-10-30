@@ -42,7 +42,7 @@ flowchart TB
 
 | 경로 | 역할 |
 |------|------|
-| `portfolio_engine/` | 전체 컨트롤러, 이체, MDD, 대시보드 |
+| `portfolio_engine/` | 전체 컨트롤러, 이체, MDD, 성과 대시보드 |
 | `gateio_eth_strategy1/` | ETH 전략 |
 | `gateio_btc_strategy1/` | BTC 전략 1 |
 | `gateio_btc_strategy2/` | BTC 전략 2 |
